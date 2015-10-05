@@ -7,6 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
+include_recipe 'apache2::default'
+include_recipe 'apache2::mod_fastcgi'
+include_recipe 'apache2::mod_php5'
+
 hammock_user = node['hammock']['user']
 
 group hammock_user do
@@ -35,14 +39,6 @@ case  node['hammock']['install_type']
     include_recipe 'hammock::install_file'
 end
 
-# package "redis" <-- here we need to use the CP redis cookbook, what's in yum is 2.4.x where we need 2.7.2+
-package "hiredis"
-package "python-daemon"
-package "python-flask"
-package "python-simplejson"
-package "python-unittest2"
-package "python-mock"
-# package "python-simple-hipchat"
 
 template "#{node['hammock']['web_dir']}/lib/config.php" do
   source node['hammock']['config_template']
@@ -62,6 +58,7 @@ template "/etc/httpd/sites-available/hammock.conf" do
   variables(
   :allowlist => node['hammock']['allowlist'] 
   )
+  notifies :reload, 'service[apache2]'
 end
 
 
